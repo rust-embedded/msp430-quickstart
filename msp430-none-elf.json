@@ -1,0 +1,17 @@
+{
+  "arch": "msp430",
+  "asm-args": ["-mcpu=msp430"],
+  "data-layout": "e-m:e-p:16:16-i32:16-i64:16-f32:16-f64:16-a:8-n8:16-S16",
+  "executables": true,
+  "linker": "msp430-elf-gcc",
+  "linker-flavor": "gcc",
+  "llvm-target": "msp430-none-elf",
+  "max-atomic-width": 0,
+  "no-integrated-as": true,
+  "os": "none",
+  "panic-strategy": "abort",
+  "relocation-model": "static",
+  "target-endian": "little",
+  "target-pointer-width": "16",
+  "vendor": "unknown"
+}
