@@ -4,13 +4,11 @@ name = "msp430-quickstart"
 version = "0.1.0"
 
 [dependencies.msp430]
-branch = "msp430"
-git = "https://github.com/japaric/cortex-m"
+git = "https://github.com/pftbest/msp430"
 
 [dependencies.msp430-rt]
-branch = "msp430-rt"
 features = ["abort-on-panic"]
-git = "https://github.com/japaric/cortex-m-rt"
+git = "https://github.com/pftbest/msp430-rt"
 
 [dependencies.msp430g2553]
 branch = "regenerate"
