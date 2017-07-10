@@ -1,4 +1,5 @@
 #![no_std]
+#![feature(abi_msp430_interrupt)]
 
 #[macro_use(default_handler)]
 extern crate msp430g2553;

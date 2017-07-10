@@ -11,9 +11,8 @@ features = ["abort-on-panic"]
 git = "https://github.com/pftbest/msp430-rt"
 
 [dependencies.msp430g2553]
-branch = "regenerate"
 features = ["rt"]
-git = "https://github.com/japaric/msp430g2553"
+git = "https://github.com/pftbest/msp430g2553"
 
 [profile.release]
 lto = true
