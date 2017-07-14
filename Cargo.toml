@@ -10,6 +10,9 @@ git = "https://github.com/pftbest/msp430"
 features = ["abort-on-panic"]
 git = "https://github.com/pftbest/msp430-rt"
 
+[dependencies.msp430-rtfm]
+git = "https://github.com/japaric/msp430-rtfm"
+
 [dependencies.msp430g2553]
 features = ["rt"]
 git = "https://github.com/pftbest/msp430g2553"
