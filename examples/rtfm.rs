@@ -9,21 +9,16 @@ extern crate msp430g2553;
 #[macro_use(task)]
 extern crate msp430_rtfm as rtfm;
 
-use rtfm::rtfm;
+use rtfm::app;
 
-rtfm! {
+app! {
     device: msp430g2553,
 
     resources: {
         SHARED: u32 = 0;
     },
 
-    init: {
-        path: init,
-    },
-
     idle: {
-        path: idle,
         resources: [SHARED],
     },
 

@@ -9,18 +9,10 @@ extern crate msp430g2553;
 extern crate msp430_rtfm as rtfm;
 
 use msp430::asm;
-use rtfm::rtfm;
+use rtfm::app;
 
-rtfm! {
+app! {
     device: msp430g2553,
-
-    init: {
-        path: init,
-    },
-
-    idle: {
-        path: idle,
-    },
 
     tasks: {
         TIMER0_A1: {
