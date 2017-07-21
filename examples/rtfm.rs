@@ -15,7 +15,7 @@ app! {
     device: msp430g2553,
 
     resources: {
-        SHARED: u32 = 0;
+        static SHARED: u32 = 0;
     },
 
     idle: {
