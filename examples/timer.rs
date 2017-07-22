@@ -49,7 +49,7 @@ fn timer_handler() {
         timer.ta0cctl1.modify(|_, w| w.ccifg().clear_bit());
 
         let port_1_2 = PORT_1_2.borrow(cs);
-        port_1_2.p1out.modify(|r, w| w.p0().bit(r.p6().bit())
-                                      .p6().bit(r.p0().bit()));
+        port_1_2.p1out.modify(|r, w| w.p0().bit(!r.p0().bit())
+                                      .p6().bit(!r.p6().bit()));
     });
 }
