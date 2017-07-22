@@ -23,6 +23,13 @@ fn delay(n: u16) {
 // P6 = green LED
 fn main() {
     interrupt::free(|cs| {
+        // Disable watchdog
+        let wdt = msp430g2553::WATCHDOG_TIMER.borrow(&cs);
+        wdt.wdtctl.write(|w| {
+            unsafe { w.bits(0x5A00) } // password
+            .wdthold().set_bit()
+        });
+
         let port_1_2 = PORT_1_2.borrow(cs);
 
         // set P0 high and P6 low
