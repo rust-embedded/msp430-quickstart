@@ -1,5 +1,11 @@
+#![no_main]
 #![no_std]
 
-extern crate msp430g2553;
+extern crate panic_msp430;
 
-fn main() {}
+use msp430_rt::entry;
+
+#[entry]
+fn main() -> ! {
+    loop { }
+}

@@ -1,21 +1,34 @@
 [package]
-authors = ["Jorge Aparicio <jorge@japaric.io>"]
+authors = ["Jorge Aparicio <jorge@japaric.io>", "William D. Jones <thor0505@comcast.net>"]
+edition = "2018"
 name = "msp430-quickstart"
-version = "0.1.0"
+version = "0.2.0"
 
 [dependencies.msp430]
+git = "https://github.com/rust-embedded/msp430"
+branch = "rt-up"
 version = "0.1.0"
 
 [dependencies.msp430-rt]
-features = ["abort-on-panic"]
-version = "0.1.0"
+git = "https://github.com/rust-embedded/msp430-rt"
+branch = "rt-up"
+version = "0.2.0"
 
-[dependencies.msp430-rtfm]
-git = "https://github.com/japaric/msp430-rtfm"
+# [dependencies.msp430-rtfm]
+# git = "https://github.com/japaric/msp430-rtfm"
 
 [dependencies.msp430g2553]
+git = "https://github.com/cr1901/msp430g2553"
+branch = "rt-up"
 features = ["rt"]
+version = "0.2.0"
+
+[dependencies.panic-msp430]
 version = "0.1.0"
 
 [profile.release]
 lto = true
+
+[patch.crates-io]
+msp430 = { git = "https://github.com/rust-embedded/msp430", branch = "rt-up" }
+msp430-rt = { git = "https://github.com/rust-embedded/msp430-rt", branch = "rt-up" }

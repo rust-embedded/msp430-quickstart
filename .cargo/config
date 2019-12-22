@@ -1,7 +1,10 @@
 [target.msp430-none-elf]
 rustflags = [
-    "-C", "link-arg=-nostartfiles",
     "-C", "link-arg=-Tlink.x",
+    "-C", "link-arg=-nostartfiles",
+    "-C", "link-arg=-mcpu=msp430",
+    "-C", "link-arg=-lmul_none", # __mspabi_mpy*. If your msp430 has a multiplier, change this.
+    "-C", "link-arg=-lgcc", # __mspabi_remu, __mspabi_func_epilog_{1,7}, etc.
 ]
 
 [build]
