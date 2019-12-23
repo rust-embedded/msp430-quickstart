@@ -4,17 +4,24 @@
 
 extern crate panic_msp430;
 
+#[cfg(not(feature = "unsafe"))]
 use core::cell::RefCell;
 use msp430::interrupt as mspint;
 use msp430_rt::entry;
 use msp430g2553::{interrupt, Peripherals};
 
+#[cfg(not(feature = "unsafe"))]
 static PERIPHERALS : mspint::Mutex<RefCell<Option<Peripherals>>> =
     mspint::Mutex::new(RefCell::new(None));
 
 #[entry]
 fn main() -> ! {
+    #[cfg(not(feature = "unsafe"))]
     let p = Peripherals::take().unwrap();
+
+    // Safe because interrupts are disabled after a reset.
+    #[cfg(feature = "unsafe")]
+    let p = unsafe { Peripherals::steal() };
 
     let wdt = &p.WATCHDOG_TIMER;
     wdt.wdtctl.write(|w| {
@@ -39,6 +46,7 @@ fn main() -> ! {
     timer.ta0cctl1.modify(|_, w| w.ccie().set_bit());
     timer.ta0ccr1.write(|w| unsafe { w.bits(600) });
 
+    #[cfg(not(feature = "unsafe"))]
     mspint::free(|cs| {
         *PERIPHERALS.borrow(cs).borrow_mut() = Some(p);
     });
@@ -51,10 +59,18 @@ fn main() -> ! {
 }
 
 #[interrupt]
+#[allow(unused_variables)]
 fn TIMER0_A1() {
     mspint::free(|cs| {
+        #[cfg(not(feature = "unsafe"))]
         let p_ref = PERIPHERALS.borrow(&cs).borrow();
+        #[cfg(not(feature = "unsafe"))]
         let p = p_ref.as_ref().unwrap();
+
+        // Safe because msp430 disables interrupts on handler entry. Therefore the handler
+        // has full control/access to peripherals without data races.
+        #[cfg(feature = "unsafe")]
+        let p = unsafe { Peripherals::steal() };
 
         let timer = &p.TIMER0_A3;
         timer.ta0cctl1.modify(|_, w| w.ccifg().clear_bit());

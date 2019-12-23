@@ -29,6 +29,9 @@ version = "0.1.0"
 [profile.release]
 lto = true
 
+[features]
+unsafe = []
+
 [patch.crates-io]
 msp430 = { git = "https://github.com/rust-embedded/msp430", branch = "rt-up" }
 msp430-rt = { git = "https://github.com/rust-embedded/msp430-rt", branch = "rt-up" }
