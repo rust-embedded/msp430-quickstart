@@ -7,7 +7,7 @@ version = "0.2.0"
 [dependencies.msp430]
 git = "https://github.com/rust-embedded/msp430"
 branch = "rt-up"
-version = "0.1.0"
+version = "0.2.0"
 
 [dependencies.msp430-rt]
 git = "https://github.com/rust-embedded/msp430-rt"
@@ -24,7 +24,9 @@ features = ["rt"]
 version = "0.2.0"
 
 [dependencies.panic-msp430]
-version = "0.1.0"
+git = "https://github.com/cr1901/panic-msp430"
+branch = "rt-up"
+version = "0.2.0"
 
 [profile.release]
 lto = true
