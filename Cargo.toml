@@ -28,6 +28,10 @@ git = "https://github.com/cr1901/panic-msp430"
 branch = "rt-up"
 version = "0.2.0"
 
+[dependencies.once_cell]
+version = "1.2.0"
+default_features = false
+
 [profile.release]
 lto = true
 
