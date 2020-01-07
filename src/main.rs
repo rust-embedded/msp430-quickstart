@@ -1,8 +1,9 @@
 #![no_main]
 #![no_std]
 
-extern crate panic_msp430;
+extern crate panic_msp430; // For now, we only have an infinitely-loop panic handler.
 
+use msp430::asm;
 use msp430_rt::entry;
 
 #[allow(unused)]
@@ -13,5 +14,11 @@ use msp430g2553;
 
 #[entry]
 fn main() -> ! {
-    loop { }
+    asm::nop(); // If this isn't included, the empty infinite loop
+                // gets optimized out during compiling. Probably safe
+                // to remove in a "real" application.
+
+    loop {
+        // Application begins here.
+    }
 }
