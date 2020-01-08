@@ -9,9 +9,6 @@ msp430 = "0.2.0"
 msp430-rt = "0.2.0"
 panic-msp430 = "0.2.0"
 
-# [dependencies.msp430-rtfm]
-# git = "https://github.com/japaric/msp430-rtfm"
-
 [dependencies.msp430g2553]
 version = "0.2.0"
 features = ["rt"]
