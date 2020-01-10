@@ -1,3 +1,6 @@
+# This file is required until msp430's libcore is available as part of Rust's
+# CI. It should not need to be modified.
+
 [dependencies.core]
 stage = 0
 

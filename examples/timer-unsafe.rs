@@ -4,17 +4,14 @@
 
 extern crate panic_msp430;
 
-use core::cell::RefCell;
 use msp430::interrupt as mspint;
 use msp430_rt::entry;
 use msp430g2553::{interrupt, Peripherals};
 
-static PERIPHERALS : mspint::Mutex<RefCell<Option<Peripherals>>> =
-    mspint::Mutex::new(RefCell::new(None));
-
 #[entry]
 fn main() -> ! {
-    let p = Peripherals::take().unwrap();
+    // Safe because interrupts are disabled after a reset.
+    let p = unsafe { Peripherals::steal() };
 
     let wdt = &p.WATCHDOG_TIMER;
     wdt.wdtctl.write(|w| {
@@ -39,10 +36,6 @@ fn main() -> ! {
     timer.ta0cctl1.modify(|_, w| w.ccie().set_bit());
     timer.ta0ccr1.write(|w| unsafe { w.bits(600) });
 
-    mspint::free(|cs| {
-        *PERIPHERALS.borrow(cs).borrow_mut() = Some(p);
-    });
-
     unsafe {
         mspint::enable();
     }
@@ -54,8 +47,9 @@ fn main() -> ! {
 #[allow(unused_variables)]
 fn TIMER0_A1() {
     mspint::free(|cs| {
-        let p_ref = PERIPHERALS.borrow(&cs).borrow();
-        let p = p_ref.as_ref().unwrap();
+        // Safe because msp430 disables interrupts on handler entry. Therefore the handler
+        // has full control/access to peripherals without data races.
+        let p = unsafe { Peripherals::steal() };
 
         let timer = &p.TIMER0_A3;
         timer.ta0cctl1.modify(|_, w| w.ccifg().clear_bit());

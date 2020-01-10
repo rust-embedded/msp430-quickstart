@@ -35,6 +35,3 @@ opt-level = "s" # Size is more important than performance on MSP430.
 codegen-units = 1 # Better size optimization.
 lto = "fat" # _Much_ better size optimization.
 # debug = true # Debug _can_ slightly increase size of .text segment.
-
-[features]
-unsafe = []

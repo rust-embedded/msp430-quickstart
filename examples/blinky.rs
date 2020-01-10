@@ -2,7 +2,6 @@
 #![no_std]
 #![feature(abi_msp430_interrupt)]
 
-
 extern crate panic_msp430;
 
 use msp430::asm;
