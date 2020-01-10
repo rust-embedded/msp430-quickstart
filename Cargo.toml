@@ -1,24 +1,40 @@
 [package]
-authors = ["Jorge Aparicio <jorge@japaric.io>", "William D. Jones <thor0505@comcast.net>"]
+authors = ["{{authors}}"]
 edition = "2018"
-name = "msp430-quickstart"
-version = "0.2.0"
+readme = "README.md"
+name = "{{project-name}}"
+version = "0.1.0"
 
 [dependencies]
 msp430 = "0.2.0"
-msp430-rt = "0.2.0"
+msp430-rt = "0.2.2"
 panic-msp430 = "0.2.0"
 
+# Use an existing PAC to ensure examples and the crate itself compiles. If
+# targeting a different device, you will need to replace all instances of
+# the identifier "msp430g2553" with the crate name of your PAC. Your PAC must
+# be generated with svd2rust git commit 783fbd0 or later.
 [dependencies.msp430g2553]
 version = "0.2.0"
 features = ["rt"]
 
-[dependencies.once_cell]
-version = "1.2.0"
-default_features = false
+# Uncomment for the "timer-oncecell example". The interior mutability type
+# OnceCell provides a better size footprint compared to RefCell.
+# [dependencies.once_cell]
+# version = "1.2.0"
+# default_features = false
+
+# Required for `xargo fix` to work!
+[[bin]]
+name = "{{project-name}}"
+test = false
+bench = false
 
 [profile.release]
-lto = true
+opt-level = "s" # Size is more important than performance on MSP430.
+codegen-units = 1 # Better size optimization.
+lto = "fat" # _Much_ better size optimization.
+# debug = true # Debug _can_ slightly increase size of .text segment.
 
 [features]
 unsafe = []

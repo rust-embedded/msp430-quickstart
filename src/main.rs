@@ -1,7 +1,7 @@
 #![no_main]
 #![no_std]
 
-extern crate panic_msp430; // For now, we only have an infinitely-loop panic handler.
+extern crate panic_msp430; // For now, we only have an infinitely-looping panic handler.
 
 use msp430::asm;
 use msp430_rt::entry;

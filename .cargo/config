@@ -5,10 +5,32 @@ runner = "msp430-elf-gdb -q -x mspdebug.gdb"
 rustflags = [
     "-C", "link-arg=-Tlink.x",
     "-C", "link-arg=-nostartfiles",
+
+    # Between approximately version 6.4.0 and 8.3.1 (non-inclusive) of the
+    # TI-provided GCC, the linker would default to linking against MSP430X
+    # libraries, resulting in a failed link. It is harmless to include the
+    # option though.
     "-C", "link-arg=-mcpu=msp430",
-    "-C", "link-arg=-lmul_none", # __mspabi_mpy*. If your msp430 has a multiplier, change this.
-    "-C", "link-arg=-lgcc", # __mspabi_remu, __mspabi_func_epilog_{1,7}, etc.
+
+    # Multiplication routines of the form __mspabi_mpy*.
+    # Uncomment _one_ of the lines below:
+    # * If your msp430 does not have a multiplier, use mul_none.
+    # * Use -lmul_16 for MSP430s with 16-bit hardware multiplier.
+    # * Use -lmul_32 for MSP430s with 32-bit hardware multiplier
+    #   _except for_ the F5-series.
+    # * Use -lmul_f5 for MSP430 in the F5 series, which have both
+    #   a 16-bit and 32-bit capable multiplier.
+    "-C", "link-arg=-lmul_none",
+    # "-C", "link-arg=-lmul_16",
+    # "-C", "link-arg=-lmul_32",
+    # "-C", "link-arg=-lmul_f5",
+
+    # Provides __mspabi_remu, __mspabi_func_epilog_{1,7}, etc. It is normal for
+    # some applications to not use this library, so feel free to comment out
+    # and experiment!
+    "-C", "link-arg=-lgcc",
 ]
 
 [build]
+# Only one target to support for all chips!
 target = "msp430-none-elf"
