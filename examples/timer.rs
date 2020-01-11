@@ -1,3 +1,13 @@
+//! Sharing data between a main thread and an interrupt handler safely.
+//!
+//! This example uses the [libcore](core)-provided [RefCell](core::cell::RefCell) to safely share
+//! access to msp430 peripherals between a main thread and interrupt.
+//!
+//! As with [timer-unsafe] and [timer-oncecell], this example uses the `TIMER0_A1` interrupt to
+//! blink LEDs on the [MSP-EXP430G2](http://www.ti.com/tool/MSP-EXP430G2) development kit.
+//!
+//! ---
+
 #![no_main]
 #![no_std]
 #![feature(abi_msp430_interrupt)]
@@ -51,7 +61,6 @@ fn main() -> ! {
 }
 
 #[interrupt]
-#[allow(unused_variables)]
 fn TIMER0_A1() {
     mspint::free(|cs| {
         let p_ref = PERIPHERALS.borrow(&cs).borrow();

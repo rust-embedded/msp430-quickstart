@@ -1,3 +1,31 @@
+//! Sharing data between a main thread and an interrupt handler safely.
+//!
+//! This example uses the externally-provided [once_cell][once] to safely share access to msp430
+//! peripherals between a main thread and interrupt.
+//!
+//! The different between [OnceCell][once] and [RefCell][ref] is that setting the data contained
+//! inside a [OnceCell][once] can be deferred to run time, but can only be set once. In contrast,
+//! the data contained within a [RefCell][ref] can be set multiple times throughout a program, but
+//! the contained data must be initialized at compile time. Additionally, [RefCell][ref] will
+//! panic if a second thread tries to change its value while the first thread is mutating the
+//! variable.
+//!
+//! The [Periperhals](msp430g2553::Peripherals) type, and individual peripherals never need
+//! to be modified. Therefore, [Periperhals](msp430g2553::Peripherals) (or a subset of the
+//! Periperhals _moved_ to another `struct`, if
+//! [building](https://blog.japaric.io/brave-new-io/#freezing-the-clock-configuration)
+//! higher-level abstractions) are good candidates to [`Send`](core::marker::Send) to a
+//! [OnceCell][once]. [OnceCell][once] in general seems to have better space usage than
+//! [RefCell][ref] due to its invariants.
+//!
+//! As with [timer] and [timer-unsafe], this example uses the `TIMER0_A1` interrupt to
+//! blink LEDs on the [MSP-EXP430G2](http://www.ti.com/tool/MSP-EXP430G2) development kit.
+//!
+//! [once]: once_cell::unsync::OnceCell
+//! [ref]: core::cell::RefCell
+//!
+//! ---
+
 #![no_main]
 #![no_std]
 #![feature(abi_msp430_interrupt)]

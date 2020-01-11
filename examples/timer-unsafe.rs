@@ -1,3 +1,19 @@
+//! Sharing data between a main thread and an interrupt handler safely using `unsafe`
+//! code blocks in contexts where they can't cause
+//! (Undefined Behavior)[https://doc.rust-lang.org/reference/behavior-considered-undefined.html].
+//!
+//! This example uses the normally `unsafe`
+//! [`Peripherals::steal()`][steal] method to safely share access to msp430 peripherals between a
+//! main thread and interrupt. All uses of [`steal()`] are commented to explain _why_ its usage
+//! is safe in that particular context.
+//!
+//! As with [timer] and [timer-oncecell], this example uses the `TIMER0_A1` interrupt to blink
+//! LEDs on the [MSP-EXP430G2](http://www.ti.com/tool/MSP-EXP430G2) development kit.
+//!
+//! [steal]: msp430g2553::Peripherals::steal
+//!
+//! ---
+
 #![no_main]
 #![no_std]
 #![feature(abi_msp430_interrupt)]
@@ -44,9 +60,8 @@ fn main() -> ! {
 }
 
 #[interrupt]
-#[allow(unused_variables)]
 fn TIMER0_A1() {
-    mspint::free(|cs| {
+    mspint::free(|_cs| {
         // Safe because msp430 disables interrupts on handler entry. Therefore the handler
         // has full control/access to peripherals without data races.
         let p = unsafe { Peripherals::steal() };

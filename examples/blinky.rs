@@ -1,3 +1,11 @@
+//! Basic "hello world" blink demo for the [MSP-EXP430G2](http://www.ti.com/tool/MSP-EXP430G2)
+//! development kit using a software delay loop- in Rust!
+//!
+//! Although unnecessary for running the demo, this example also shows the syntax for declaring
+//! an interrupt.
+//!
+//! ---
+
 #![no_main]
 #![no_std]
 #![feature(abi_msp430_interrupt)]
