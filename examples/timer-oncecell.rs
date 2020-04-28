@@ -41,7 +41,7 @@ static PERIPHERALS : mspint::Mutex<OnceCell<Peripherals>> =
     mspint::Mutex::new(OnceCell::new());
 
 #[entry]
-fn main() -> ! {
+fn main(cs: CriticalSection) -> ! {
     let p = Peripherals::take().unwrap();
 
     let wdt = &p.WATCHDOG_TIMER;
@@ -67,10 +67,9 @@ fn main() -> ! {
     timer.ta0cctl1.modify(|_, w| w.ccie().set_bit());
     timer.ta0ccr1.write(|w| unsafe { w.bits(600) });
 
-    mspint::free(|cs| {
-        PERIPHERALS.borrow(cs).set(p).ok().unwrap();
-    });
+    PERIPHERALS.borrow(&cs).set(p).ok().unwrap();
 
+    drop(cs);
     unsafe {
         mspint::enable();
     }
@@ -79,17 +78,15 @@ fn main() -> ! {
 }
 
 #[interrupt]
-fn TIMER0_A1() {
-    mspint::free(|cs| {
-        let p = PERIPHERALS.borrow(&cs).get().unwrap();
+fn TIMER0_A1(cs: CriticalSection) {
+    let p = PERIPHERALS.borrow(&cs).get().unwrap();
 
-        let timer = &p.TIMER0_A3;
-        timer.ta0cctl1.modify(|_, w| w.ccifg().clear_bit());
+    let timer = &p.TIMER0_A3;
+    timer.ta0cctl1.modify(|_, w| w.ccifg().clear_bit());
 
-        let port_1_2 = &p.PORT_1_2;
-        port_1_2.p1out.modify(|r, w| w.p0().bit(!r.p0().bit())
-                                      .p6().bit(!r.p6().bit()));
-    });
+    let port_1_2 = &p.PORT_1_2;
+    port_1_2.p1out.modify(|r, w| w.p0().bit(!r.p0().bit())
+                                  .p6().bit(!r.p6().bit()));
 }
 
 #[no_mangle]

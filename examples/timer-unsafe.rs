@@ -25,7 +25,7 @@ use msp430_rt::entry;
 use msp430g2553::{interrupt, Peripherals};
 
 #[entry]
-fn main() -> ! {
+fn main(cs: CriticalSection) -> ! {
     // Safe because interrupts are disabled after a reset.
     let p = unsafe { Peripherals::steal() };
 
@@ -52,6 +52,7 @@ fn main() -> ! {
     timer.ta0cctl1.modify(|_, w| w.ccie().set_bit());
     timer.ta0ccr1.write(|w| unsafe { w.bits(600) });
 
+    drop(cs);
     unsafe {
         mspint::enable();
     }
@@ -60,19 +61,17 @@ fn main() -> ! {
 }
 
 #[interrupt]
-fn TIMER0_A1() {
-    mspint::free(|_cs| {
-        // Safe because msp430 disables interrupts on handler entry. Therefore the handler
-        // has full control/access to peripherals without data races.
-        let p = unsafe { Peripherals::steal() };
+fn TIMER0_A1(_cs: CriticalSection) {
+    // Safe because msp430 disables interrupts on handler entry. Therefore the handler
+    // has full control/access to peripherals without data races.
+    let p = unsafe { Peripherals::steal() };
 
-        let timer = &p.TIMER0_A3;
-        timer.ta0cctl1.modify(|_, w| w.ccifg().clear_bit());
+    let timer = &p.TIMER0_A3;
+    timer.ta0cctl1.modify(|_, w| w.ccifg().clear_bit());
 
-        let port_1_2 = &p.PORT_1_2;
-        port_1_2.p1out.modify(|r, w| w.p0().bit(!r.p0().bit())
-                                      .p6().bit(!r.p6().bit()));
-    });
+    let port_1_2 = &p.PORT_1_2;
+    port_1_2.p1out.modify(|r, w| w.p0().bit(!r.p0().bit())
+                                  .p6().bit(!r.p6().bit()));
 }
 
 #[no_mangle]

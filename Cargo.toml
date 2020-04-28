@@ -7,7 +7,7 @@ version = "0.1.0"
 
 [dependencies]
 msp430 = "0.2.0"
-msp430-rt = "0.2.2"
+msp430-rt = "0.2.4"
 panic-msp430 = "0.2.0"
 
 # Use an existing PAC to ensure examples and the crate itself compiles. If
