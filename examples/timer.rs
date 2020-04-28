@@ -51,12 +51,13 @@ fn main(cs: CriticalSection) -> ! {
 
     *PERIPHERALS.borrow(&cs).borrow_mut() = Some(p);
 
-    drop(cs);
-    unsafe {
-        mspint::enable();
-    }
+    mspint::enable_cs(cs);
 
-    loop {}
+    loop {
+        mspint::free(|_cs| {
+            // Do something while interrupts are disabled.
+        })
+    }
 }
 
 #[interrupt]

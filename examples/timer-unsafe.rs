@@ -52,12 +52,13 @@ fn main(cs: CriticalSection) -> ! {
     timer.ta0cctl1.modify(|_, w| w.ccie().set_bit());
     timer.ta0ccr1.write(|w| unsafe { w.bits(600) });
 
-    drop(cs);
-    unsafe {
-        mspint::enable();
-    }
+    mspint::enable_cs(cs);
 
-    loop {}
+    loop {
+        mspint::free(|_cs| {
+            // Do something while interrupts are disabled.
+        })
+    }
 }
 
 #[interrupt]
