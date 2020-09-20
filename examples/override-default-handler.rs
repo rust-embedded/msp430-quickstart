@@ -34,3 +34,8 @@ fn DefaultHandler() {
         ptr::write_volatile(&mut X, ptr::read_volatile(&X) + 1);
     }
 }
+
+#[no_mangle]
+extern "C" fn abort() -> ! {
+    panic!();
+}

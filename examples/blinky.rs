@@ -62,8 +62,12 @@ fn main() -> ! {
     }
 }
 
-
 #[interrupt]
 fn TIMER0_A0() {
 
+}
+
+#[no_mangle]
+extern "C" fn abort() -> ! {
+    panic!();
 }

@@ -91,3 +91,8 @@ fn TIMER0_A1() {
                                       .p6().bit(!r.p6().bit()));
     });
 }
+
+#[no_mangle]
+extern "C" fn abort() -> ! {
+    panic!();
+}
