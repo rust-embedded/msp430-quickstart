@@ -1,5 +1,5 @@
 [target.msp430-none-elf]
-# Upload firmware and start a GDB session with "xargo run".
+# Upload firmware and start a GDB session with "cargo run".
 runner = "msp430-elf-gdb -q -x mspdebug.gdb"
 
 rustflags = [

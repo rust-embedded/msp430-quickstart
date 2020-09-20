@@ -24,7 +24,7 @@ features = ["rt"]
 # version = "1.2.0"
 # default_features = false
 
-# Required for `xargo fix` to work!
+# Required for `cargo fix` to work!
 [[bin]]
 name = "{{project-name}}"
 test = false

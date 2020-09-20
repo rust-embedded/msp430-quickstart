@@ -15,14 +15,6 @@ This project is developed and maintained by the [MSP430 team][team].
 
 - The `cargo generate` subcommand ([Installation instructions](https://github.com/ashleygwilliams/cargo-generate#installation)).
 
-- The [`xargo`](https://github.com/japaric/xargo) sysroot manager.
-  `xargo` is required until MSP430's `libcore` is part of Rust CI). To
-  install, run:
-  ``` console
-  $ cargo install xargo
-  $ rustup component add rust-src
-  ```
-
 - TI's [MSP430 GCC Compiler](http://www.ti.com/tool/MSP430-GCC-OPENSOURCE),
   version 8.3.0 or greater. `msp430-elf-gcc` should be visible on the path.
 
@@ -124,15 +116,13 @@ This project is developed and maintained by the [MSP430 team][team].
 
 5. Build the template application or one of the examples. If building
    `timer-oncecell`, don't forget to uncomment the `once_cell` dependency in
-   `Cargo.toml`!
+   `Cargo.toml`! Some examples (such as `timer`) may not compile due to size
+   constraints when building using the `dev` profile (the default).
 
    ``` console
-   $ xargo build
-   $ xargo build --examples
+   $ cargo build -Zbuild-std=core
+   $ cargo build -Zbuild-std=core --examples
    ```
-
-   `Xargo.toml` is set up properly for nearly all use cases and need not be
-   modified.
 
 # License
 
