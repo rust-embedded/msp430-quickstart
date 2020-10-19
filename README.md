@@ -124,6 +124,20 @@ This project is developed and maintained by the [MSP430 team][team].
    $ cargo build -Zbuild-std=core --examples
    ```
 
+6. Once you have an ELF binary built, flash it to your microcontroller. Use [`mspdebug`](https://github.com/dlbeer/mspdebug) to launch a debug session and `msp430-elf-gdb` with the linked gdb script. For the msp430g2553 and the MSP-EXP430G2 launchpad board this looks like the following:
+
+   In one terminal session
+   ```console
+   $ mspdebug -C mspdebug.cfg rf2500
+   ```
+
+   In another terminal session
+   ```console
+   $ msp430-elf-gdb -x mspdebug.gdb target/msp430-none-elf/debug/app
+   ```
+
+   This will flash your Rust code to the microcontroller and open a gdb debugging session to step through it.
+
 # License
 
 Licensed under either of
