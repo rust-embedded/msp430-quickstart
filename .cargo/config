@@ -3,7 +3,7 @@
 runner = "msp430-elf-gdb -q -x mspdebug.gdb"
 
 rustflags = [
-    "-C", "link-arg=-Tlink.x",
+    "-C", "link-arg=-Tmemory.x",
     "-C", "link-arg=-nostartfiles",
 
     # Between approximately version 6.4.0 and 8.3.1 (non-inclusive) of the
