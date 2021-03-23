@@ -20,8 +20,8 @@ features = ["rt"]
 
 # Uncomment for the "timer-oncecell example". The interior mutability type
 # OnceCell provides a better size footprint compared to RefCell.
-# [dependencies.once_cell]
-# version = "1.2.0"
+# [dev-dependencies.once_cell]
+# version = "1.7.2"
 # default_features = false
 
 # Required for `cargo fix` to work!
