@@ -38,8 +38,7 @@ fn main() -> ! {
     // Disable watchdog
     let wd = p.WATCHDOG_TIMER;
     wd.wdtctl.write(|w| {
-        unsafe { w.bits(0x5A00) } // password
-        .wdthold().set_bit()
+        w.wdtpw().password().wdthold().set_bit()
     });
 
     let p12 = p.PORT_1_2;

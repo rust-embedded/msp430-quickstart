@@ -25,14 +25,13 @@ use msp430_rt::entry;
 use {{device}}::{interrupt, Peripherals};
 
 #[entry]
-fn main(cs: CriticalSection) -> ! {
+fn main(_cs: CriticalSection) -> ! {
     // Safe because interrupts are disabled after a reset.
     let p = unsafe { Peripherals::steal() };
 
     let wdt = &p.WATCHDOG_TIMER;
     wdt.wdtctl.write(|w| {
-        unsafe { w.bits(0x5A00) } // password
-        .wdthold().set_bit()
+        w.wdtpw().password().wdthold().set_bit()
     });
 
     let port_1_2 = &p.PORT_1_2;
@@ -46,12 +45,13 @@ fn main(cs: CriticalSection) -> ! {
     clock.bcsctl1.modify(|_, w| w.diva().diva_1());
 
     let timer = &p.TIMER0_A3;
-    timer.taccr0.write(|w| unsafe { w.bits(1200) });
+    timer.taccr0.write(|w| w.bits(1200));
     timer.tactl.modify(|_, w| w.tassel().tassel_1()
                                 .mc().mc_1());
     timer.tacctl1.modify(|_, w| w.ccie().set_bit());
-    timer.taccr1.write(|w| unsafe { w.bits(600) });
+    timer.taccr1.write(|w| w.bits(600));
 
+    // Safe because interrupts are disabled after a reset.
     unsafe { mspint::enable(); }
 
     loop {
