@@ -17,11 +17,11 @@ panic-msp430 = "0.3.0"
 version = "0.3.0"
 features = ["rt"]
 
-# Uncomment for the "timer-oncecell example". The interior mutability type
-# OnceCell provides a better size footprint compared to RefCell.
-# [dev-dependencies.once_cell]
-# version = "1.7.2"
-# default_features = false
+{% if examples == "yes" %}
+[dev-dependencies.once_cell]
+version = "1.7.2"
+default_features = false
+{% endif %}
 
 # Required for `cargo fix` to work!
 [[bin]]

@@ -1,5 +1,10 @@
 [placeholders]
 device = { type = "string", prompt = "Which msp430 device do you wish to target?", default = "msp430g2553" }
+# choices does not seem to work on my machine right now...
+examples = { type = "string", prompt = "Do you wish to import examples?", default = "yes" }
 
 [template]
 cargo_generate_version = ">=0.12.0"
+
+[conditional.'examples == "no"']
+ignore = [ "examples" ]
