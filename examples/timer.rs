@@ -17,7 +17,7 @@ extern crate panic_msp430;
 use core::cell::RefCell;
 use msp430::interrupt as mspint;
 use msp430_rt::entry;
-use msp430g2553::{interrupt, Peripherals};
+use {{device}}::{interrupt, Peripherals};
 
 static PERIPHERALS : mspint::Mutex<RefCell<Option<Peripherals>>> =
     mspint::Mutex::new(RefCell::new(None));

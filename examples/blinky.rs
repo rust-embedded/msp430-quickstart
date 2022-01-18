@@ -14,7 +14,7 @@ extern crate panic_msp430;
 
 use msp430::asm;
 use msp430_rt::entry;
-use msp430g2553::interrupt;
+use {{device}}::interrupt;
 
 fn delay(n: u16) {
     let mut i = 0;
@@ -33,7 +33,7 @@ fn delay(n: u16) {
 // P6 = green LED
 #[entry]
 fn main() -> ! {
-    let p = msp430g2553::Peripherals::take().unwrap();
+    let p = {{device}}::Peripherals::take().unwrap();
 
     // Disable watchdog
     let wd = p.WATCHDOG_TIMER;

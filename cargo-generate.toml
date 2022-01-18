@@ -1,0 +1,5 @@
+[placeholders]
+device = { type = "string", prompt = "Which msp430 device do you wish to target?", default = "msp430g2553" }
+
+[template]
+cargo_generate_version = ">=0.12.0"
