@@ -43,15 +43,15 @@ fn main(cs: CriticalSection) -> ! {
     clock.bcsctl1.modify(|_, w| w.diva().diva_1());
 
     let timer = &p.TIMER0_A3;
-    timer.ta0ccr0.write(|w| unsafe { w.bits(1200) });
-    timer.ta0ctl.modify(|_, w| w.tassel().tassel_1()
+    timer.taccr0.write(|w| unsafe { w.bits(1200) });
+    timer.tactl.modify(|_, w| w.tassel().tassel_1()
                                 .mc().mc_1());
-    timer.ta0cctl1.modify(|_, w| w.ccie().set_bit());
-    timer.ta0ccr1.write(|w| unsafe { w.bits(600) });
+    timer.tacctl1.modify(|_, w| w.ccie().set_bit());
+    timer.taccr1.write(|w| unsafe { w.bits(600) });
 
-    *PERIPHERALS.borrow(&cs).borrow_mut() = Some(p);
+    *PERIPHERALS.borrow(cs).borrow_mut() = Some(p);
 
-    mspint::enable_cs(cs);
+    unsafe { mspint::enable(); }
 
     loop {
         mspint::free(|_cs| {
@@ -62,11 +62,11 @@ fn main(cs: CriticalSection) -> ! {
 
 #[interrupt]
 fn TIMER0_A1(cs: CriticalSection) {
-    let p_ref = PERIPHERALS.borrow(&cs).borrow();
+    let p_ref = PERIPHERALS.borrow(cs).borrow();
     let p = p_ref.as_ref().unwrap();
 
     let timer = &p.TIMER0_A3;
-    timer.ta0cctl1.modify(|_, w| w.ccifg().clear_bit());
+    timer.tacctl1.modify(|_, w| w.ccifg().clear_bit());
 
     let port_1_2 = &p.PORT_1_2;
     port_1_2.p1out.modify(|r, w| w.p0().bit(!r.p0().bit())

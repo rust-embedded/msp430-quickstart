@@ -6,16 +6,16 @@ name = "{{project-name}}"
 version = "0.1.0"
 
 [dependencies]
-msp430 = "0.2.2"
-msp430-rt = "0.2.4"
-panic-msp430 = "0.2.0"
+msp430 = "0.3.0"
+msp430-rt = "0.3.0"
+panic-msp430 = "0.3.0"
 
 # Use an existing PAC to ensure examples and the crate itself compiles. If
 # targeting a different device, you will need to replace all instances of
 # the identifier "msp430g2553" with the crate name of your PAC. Your PAC must
 # be generated with svd2rust git commit 783fbd0 or later.
 [dependencies.msp430g2553]
-version = "0.2.0"
+version = "0.3.0"
 features = ["rt"]
 
 # Uncomment for the "timer-oncecell example". The interior mutability type
