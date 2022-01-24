@@ -18,9 +18,21 @@ version = "0.3.0"
 features = ["rt"]
 
 {% if examples == "yes" %}
+[dev-dependencies]
+tcn75a = "0.1.0"
+embedded-hal = "1.0.0-alpha.6"
+embedded-hal-stable = { package = "embedded-hal", version = "0.2.6" }
+nb = "1.0.0"
+fixed = "1.6.0"
+fixed-macro = "1.1.1"
+
 [dev-dependencies.once_cell]
 version = "1.7.2"
 default_features = false
+
+[patch.crates-io.fixed-macro]
+git = "https://github.com/kvinwang/fixed-macro"
+version = "1.1.1"
 {% endif %}
 
 # Required for `cargo fix` to work!
