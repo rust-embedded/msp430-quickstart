@@ -107,7 +107,7 @@ impl I2c {
             .ucb0ctl0
             .modify(|_, w| w.ucsync().set_bit().ucmode().ucmode_3().ucmst().set_bit()); // I2C mode
 
-        inner.ucb0br0.write(|w| w.bits(9)); // INT(1.1MHz/11) = 100kHz
+        inner.ucb0br0.write(|w| w.bits(11)); // INT(1.1MHz/11) = 100kHz
         inner.ucb0br1.write(|w| w.bits(0));
 
         inner.ucb0ctl1.modify(|_, w| w.ucswrst().clear_bit());
@@ -245,7 +245,7 @@ pub struct SfrIfg {
 }
 
 impl SfrIfg {
-    pub fn new(token: {{device}}::SPECIAL_FUNCTION) -> Self {
+    pub fn new(_token: {{device}}::SPECIAL_FUNCTION) -> Self {
 
         // SAFETY: Thanks to the input arg, we have already either:
         // 1. Safely acquired the peripherals at this point, and thus another thread can't acquire
@@ -279,6 +279,7 @@ impl Ucb0TxIfg {
         Ucb0TxIfg { inner }
     }
 
+    #[allow(unused)]
     fn bit_is_set(&self) -> bool {
         self.inner.ifg2.read().ucb0txifg().bit_is_set()
     }
@@ -297,6 +298,7 @@ impl Ucb0RxIfg {
         Ucb0RxIfg { inner }
     }
 
+    #[allow(unused)]
     fn bit_is_set(&self) -> bool {
         self.inner.ifg2.read().ucb0rxifg().bit_is_set()
     }

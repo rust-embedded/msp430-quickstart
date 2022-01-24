@@ -1,3 +1,10 @@
+//! Temperature sensor demo for the [MSP-EXP430G2](http://www.ti.com/tool/MSP-EXP430G2)
+//! development kit. Make sure jumpers are set to HW UART, (possibly) disconnect the green LED
+//! jumper, and attach a [TCN75A](https://www.microchip.com/en-us/product/TCN75A) to pins 1.6
+//! (SCK) and 1.7 (SDA). Push the button attached to 1.3 to toggle between F, C, and K!
+//!
+//! ---
+
 #![no_main]
 #![no_std]
 #![feature(abi_msp430_interrupt)]
@@ -67,7 +74,7 @@ fn main(cs: CriticalSection) -> ! {
     let mut timer = Timer::new(p.TIMER0_A3);
     timer.start(6000u16).unwrap();
 
-    let mut serial = Serial::new(p.USCI_A0_UART_MODE);
+    let serial = Serial::new(p.USCI_A0_UART_MODE);
 
     let i2c_flags = SfrIfg::new(p.SPECIAL_FUNCTION);
     let i2c = I2c::new(p.USCI_B0_I2C_MODE, i2c_flags.ucb0ifg);
@@ -85,7 +92,6 @@ fn main(cs: CriticalSection) -> ! {
         mspint::enable();
     }
 
-    let mut cnt: u8 = 0;
     loop {
         mspint::free(|cs| {
             let mut t_ref = TIMER.borrow(*cs).borrow_mut();
