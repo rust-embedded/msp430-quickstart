@@ -37,34 +37,28 @@ fn main() -> ! {
 
     // Disable watchdog
     let wd = p.WATCHDOG_TIMER;
-    wd.wdtctl.write(|w| {
-        w.wdtpw().password().wdthold().set_bit()
-    });
+    wd.wdtctl
+        .write(|w| w.wdtpw().password().wdthold().set_bit());
 
     let p12 = p.PORT_1_2;
 
     // set P0 high and P6 low
-    p12.p1out
-       .modify(|_, w| w.p0().set_bit().p6().clear_bit());
+    p12.p1out.modify(|_, w| w.p0().set_bit().p6().clear_bit());
 
     // Set P0 and P6 as outputs
-    p12.p1dir
-       .modify(|_, w| w.p0().set_bit().p6().set_bit());
+    p12.p1dir.modify(|_, w| w.p0().set_bit().p6().set_bit());
 
     loop {
         delay(10_000);
 
         // toggle outputs
-        p12.p1out.modify(
-            |r, w| w.p0().bit(!r.p0().bit()).p6().bit(!r.p6().bit()),
-        );
+        p12.p1out
+            .modify(|r, w| w.p0().bit(!r.p0().bit()).p6().bit(!r.p6().bit()));
     }
 }
 
 #[interrupt]
-fn TIMER0_A0() {
-
-}
+fn TIMER0_A0() {}
 
 #[no_mangle]
 extern "C" fn abort() -> ! {

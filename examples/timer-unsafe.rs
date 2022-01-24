@@ -30,15 +30,16 @@ fn main(_cs: CriticalSection) -> ! {
     let p = unsafe { Peripherals::steal() };
 
     let wdt = &p.WATCHDOG_TIMER;
-    wdt.wdtctl.write(|w| {
-        w.wdtpw().password().wdthold().set_bit()
-    });
+    wdt.wdtctl
+        .write(|w| w.wdtpw().password().wdthold().set_bit());
 
     let port_1_2 = &p.PORT_1_2;
-    port_1_2.p1dir.modify(|_, w| w.p0().set_bit()
-                                  .p6().set_bit());
-    port_1_2.p1out.modify(|_, w| w.p0().set_bit()
-                                  .p6().clear_bit());
+    port_1_2
+        .p1dir
+        .modify(|_, w| w.p0().set_bit().p6().set_bit());
+    port_1_2
+        .p1out
+        .modify(|_, w| w.p0().set_bit().p6().clear_bit());
 
     let clock = &p.SYSTEM_CLOCK;
     clock.bcsctl3.modify(|_, w| w.lfxt1s().lfxt1s_2());
@@ -46,13 +47,14 @@ fn main(_cs: CriticalSection) -> ! {
 
     let timer = &p.TIMER0_A3;
     timer.taccr0.write(|w| w.bits(1200));
-    timer.tactl.modify(|_, w| w.tassel().tassel_1()
-                                .mc().mc_1());
+    timer.tactl.modify(|_, w| w.tassel().tassel_1().mc().mc_1());
     timer.tacctl1.modify(|_, w| w.ccie().set_bit());
     timer.taccr1.write(|w| w.bits(600));
 
     // Safe because interrupts are disabled after a reset.
-    unsafe { mspint::enable(); }
+    unsafe {
+        mspint::enable();
+    }
 
     loop {
         mspint::free(|_cs| {
@@ -71,8 +73,9 @@ fn TIMER0_A1(_cs: CriticalSection) {
     timer.tacctl1.modify(|_, w| w.ccifg().clear_bit());
 
     let port_1_2 = &p.PORT_1_2;
-    port_1_2.p1out.modify(|r, w| w.p0().bit(!r.p0().bit())
-                                  .p6().bit(!r.p6().bit()));
+    port_1_2
+        .p1out
+        .modify(|r, w| w.p0().bit(!r.p0().bit()).p6().bit(!r.p6().bit()));
 }
 
 #[no_mangle]

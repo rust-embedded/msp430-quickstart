@@ -18,7 +18,7 @@ use fixed_macro::types::I8F8;
 use msp430::interrupt as mspint;
 use msp430_rt::entry;
 use {{device}}::{interrupt, Peripherals};
-use tcn75a::{Tcn75a, ConfigReg, Resolution};
+use tcn75a::{ConfigReg, Resolution, Tcn75a};
 
 // static PERIPHERALS : mspint::Mutex<OnceCell<Peripherals>> =
 //     mspint::Mutex::new(OnceCell::new());
@@ -39,21 +39,30 @@ fn main(cs: CriticalSection) -> ! {
     clock.bcsctl1.modify(|_, w| w.diva().diva_1()); // Divide AUX clock by two (6000 Hz).
 
     let port_1_2 = &p.PORT_1_2;
-    port_1_2
-        .p1dir
-        .modify(|_, w| w.p0().set_bit());
-    port_1_2
-        .p1out
-        .modify(|_, w| w.p0().set_bit());
+    port_1_2.p1dir.modify(|_, w| w.p0().set_bit());
+    port_1_2.p1out.modify(|_, w| w.p0().set_bit());
 
     // Set bits for UART and I2C operation.
-    port_1_2
-        .p1sel
-        .modify(|_, w| w.p1().set_bit().p2().set_bit().p6().set_bit().p7().set_bit());
-    port_1_2
-        .p1sel2
-        .modify(|_, w| w.p1().set_bit().p2().set_bit().p6().set_bit().p7().set_bit());
-
+    port_1_2.p1sel.modify(|_, w| {
+        w.p1()
+            .set_bit()
+            .p2()
+            .set_bit()
+            .p6()
+            .set_bit()
+            .p7()
+            .set_bit()
+    });
+    port_1_2.p1sel2.modify(|_, w| {
+        w.p1()
+            .set_bit()
+            .p2()
+            .set_bit()
+            .p6()
+            .set_bit()
+            .p7()
+            .set_bit()
+    });
 
     let mut timer = Timer::new(p.TIMER0_A3);
     timer.start(6000u16).unwrap();

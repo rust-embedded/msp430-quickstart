@@ -93,7 +93,7 @@ impl SerWrite<u8> for Serial {
 
 pub struct I2c {
     inner: {{device}}::USCI_B0_I2C_MODE,
-    ifg: Ucb0Ifg
+    ifg: Ucb0Ifg,
 }
 
 impl I2c {
@@ -109,10 +109,7 @@ impl I2c {
 
         inner.ucb0ctl1.modify(|_, w| w.ucswrst().clear_bit());
 
-        I2c {
-            inner,
-            ifg
-        }
+        I2c { inner, ifg }
     }
 }
 
@@ -120,12 +117,10 @@ impl I2cRead for I2c {
     // FIXME: Handle various error cases.
     type Error = Infallible;
 
-    fn read(
-        &mut self,
-        address: u8,
-        buffer: &mut [u8]
-    ) -> Result<(), Self::Error> {
-        self.inner.ucb0i2csa.write(|w| w.ucsa().bits(address.into()));
+    fn read(&mut self, address: u8, buffer: &mut [u8]) -> Result<(), Self::Error> {
+        self.inner
+            .ucb0i2csa
+            .write(|w| w.ucsa().bits(address.into()));
         self.inner.ucb0ctl1.modify(|_, w| w.uctr().clear_bit());
         self.inner.ucb0ctl1.modify(|_, w| w.uctxstt().set_bit()); // Generate start condition.
 
@@ -224,7 +219,9 @@ impl Watchdog for WatchdogTimer {
     type Error = Infallible;
 
     fn feed(&mut self) -> Result<(), Self::Error> {
-        self.inner.wdtctl.write(|w| w.wdtpw().password().wdtcntcl().set_bit());
+        self.inner
+            .wdtctl
+            .write(|w| w.wdtpw().password().wdtcntcl().set_bit());
         Ok(())
     }
 }
@@ -241,7 +238,7 @@ pub enum WatchdogDivider {
 // Struct that allows fine grained splitting of SFRs that are shared between peripherals, so that
 // HAL impls can only access the registers they need. Functionality implemented on as-needed basis.
 pub struct SfrIfg {
-    pub ucb0ifg: Ucb0Ifg
+    pub ucb0ifg: Ucb0Ifg,
 }
 
 impl SfrIfg {
@@ -251,13 +248,15 @@ impl SfrIfg {
         // 1. Safely acquired the peripherals at this point, and thus another thread can't acquire
         // them without a Mutex+CriticalSection, or some other synchronization mechanism. Or...
         // 2. We already have opted into unsafety, at which point anything goes.
-        let ucb0txifg = unsafe { Ucb0TxIfg::new({{device}}::Peripherals::steal().SPECIAL_FUNCTION) };
-        let ucb0rxifg = unsafe { Ucb0RxIfg::new({{device}}::Peripherals::steal().SPECIAL_FUNCTION) };
+        let ucb0txifg =
+            unsafe { Ucb0TxIfg::new({{device}}::Peripherals::steal().SPECIAL_FUNCTION) };
+        let ucb0rxifg =
+            unsafe { Ucb0RxIfg::new({{device}}::Peripherals::steal().SPECIAL_FUNCTION) };
 
         SfrIfg {
             ucb0ifg: Ucb0Ifg {
                 ucb0txifg,
-                ucb0rxifg
+                ucb0rxifg,
             },
         }
     }
