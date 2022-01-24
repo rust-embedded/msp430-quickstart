@@ -19,9 +19,7 @@ features = ["rt"]
 
 {% if examples == "yes" %}
 [dev-dependencies]
-tcn75a = "0.1.0"
 embedded-hal = "1.0.0-alpha.6"
-embedded-hal-stable = { package = "embedded-hal", version = "0.2.6" }
 nb = "1.0.0"
 fixed = "1.6.0"
 fixed-macro = "1.1.1"
@@ -29,6 +27,11 @@ fixed-macro = "1.1.1"
 [dev-dependencies.once_cell]
 version = "1.7.2"
 default_features = false
+
+[dev-dependencies.tcn75a]
+version = "0.2.0"
+git = "https://github.com/cr1901/i2c-server"
+branch = "embedded-hal-1.0"
 
 [patch.crates-io.fixed-macro]
 git = "https://github.com/kvinwang/fixed-macro"

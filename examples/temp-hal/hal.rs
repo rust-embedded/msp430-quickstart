@@ -1,9 +1,12 @@
 use core::convert::Infallible;
 
+use embedded_hal::i2c::{
+    self,
+    blocking::{Read as I2cRead, Write as I2cWrite}
+};
 use embedded_hal::serial::{self, nb::Write as SerWrite};
 use embedded_hal::timer::{nb::CountDown, Periodic};
 use embedded_hal::watchdog::blocking::{Disable, Enable, Watchdog};
-use embedded_hal_stable::blocking::i2c::{Read as I2cRead, Write as I2cWrite};
 use nb::Error as NbError;
 use nb::Result as NbResult;
 
@@ -115,7 +118,7 @@ impl I2c {
 
 impl I2cRead for I2c {
     // FIXME: Handle various error cases.
-    type Error = Infallible;
+    type Error = i2c::ErrorKind;
 
     fn read(&mut self, address: u8, buffer: &mut [u8]) -> Result<(), Self::Error> {
         self.inner
@@ -148,7 +151,7 @@ impl I2cRead for I2c {
 
 impl I2cWrite for I2c {
     // FIXME: Handle various error cases.
-    type Error = Infallible;
+    type Error = i2c::ErrorKind;
 
     fn write(&mut self, addr: u8, bytes: &[u8]) -> Result<(), Self::Error> {
         self.inner.ucb0i2csa.write(|w| w.ucsa().bits(addr.into()));
