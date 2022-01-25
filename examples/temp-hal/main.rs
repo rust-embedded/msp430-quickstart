@@ -1,7 +1,7 @@
 //! Temperature sensor demo for the [MSP-EXP430G2](http://www.ti.com/tool/MSP-EXP430G2)
 //! development kit. Make sure jumpers are set to HW UART, (possibly) disconnect the green LED
 //! jumper, and attach a [TCN75A](https://www.microchip.com/en-us/product/TCN75A) to pins 1.6
-//! (SCK) and 1.7 (SDA). Push the button attached to 1.3 to toggle between F, C, and K!
+//! (SCK) and 1.7 (SDA). Push the button attached to 1.3 to toggle between F, and C!
 //!
 //! ---
 
@@ -14,26 +14,33 @@ use hal::*;
 
 extern crate panic_msp430;
 
-use core::cell::RefCell;
+use core::cell::{Cell, RefCell};
 use core::fmt::Write;
 
 use embedded_hal::serial::{self, nb::Write as SerWrite};
 use embedded_hal::timer::nb::CountDown;
 use embedded_hal::watchdog::blocking::Disable;
-use fixed::types::I8F8;
-use fixed_macro::types::I8F8;
+use fixed::traits::LossyFrom;
+use fixed::types::{I8F8, I9F7};
+use fixed_macro::types::{I8F8, I9F7};
 use msp430::interrupt as mspint;
 use msp430_rt::entry;
 use {{device}}::{interrupt, Peripherals};
+use once_cell::unsync::OnceCell;
 use tcn75a::{ConfigReg, Resolution, Tcn75a};
-
-// static PERIPHERALS : mspint::Mutex<OnceCell<Peripherals>> =
-//     mspint::Mutex::new(OnceCell::new());
 
 // Serial in the future may use interrupts. TCN75A is currently blocking and does not use
 // interrupts, thus is not static.
 static TIMER: mspint::Mutex<RefCell<Option<Timer>>> = mspint::Mutex::new(RefCell::new(None));
 static SERIAL: mspint::Mutex<RefCell<Option<Serial>>> = mspint::Mutex::new(RefCell::new(None));
+static PORT1_PINS: mspint::Mutex<OnceCell<{{device}}::PORT_1_2>> = mspint::Mutex::new(OnceCell::new());
+static TEMP_DISPLAY: mspint::Mutex<Cell<TempDisplay>> = mspint::Mutex::new(Cell::new(TempDisplay::Celsius));
+
+#[derive(Debug, Clone, Copy)]
+enum TempDisplay {
+    Celsius,
+    Fahrenheit,
+}
 
 #[entry]
 fn main(cs: CriticalSection) -> ! {
@@ -46,8 +53,9 @@ fn main(cs: CriticalSection) -> ! {
     clock.bcsctl1.modify(|_, w| w.diva().diva_1()); // Divide AUX clock by two (6000 Hz).
 
     let port_1_2 = &p.PORT_1_2;
-    port_1_2.p1dir.modify(|_, w| w.p0().set_bit());
-    port_1_2.p1out.modify(|_, w| w.p0().set_bit());
+    port_1_2.p1dir.modify(|_, w| w.p0().set_bit().p3().clear_bit());
+    port_1_2.p1out.modify(|_, w| w.p0().set_bit().p3().set_bit()); // Pullup on P3.
+    port_1_2.p1ren.modify(|_, w| w.p3().set_bit());
 
     // Set bits for UART and I2C operation.
     port_1_2.p1sel.modify(|_, w| {
@@ -71,6 +79,11 @@ fn main(cs: CriticalSection) -> ! {
             .set_bit()
     });
 
+    // Set bit to interrupt on button on P1.3
+    port_1_2.p1ie.modify(|_, w| {
+        w.p3().set_bit()
+    });
+
     let mut timer = Timer::new(p.TIMER0_A3);
     timer.start(6000u16).unwrap();
 
@@ -86,6 +99,7 @@ fn main(cs: CriticalSection) -> ! {
 
     *TIMER.borrow(cs).borrow_mut() = Some(timer);
     *SERIAL.borrow(cs).borrow_mut() = Some(serial);
+    PORT1_PINS.borrow(cs).set(p.PORT_1_2).ok().unwrap();
 
     // Safe because interrupts are disabled after a reset.
     unsafe {
@@ -99,15 +113,46 @@ fn main(cs: CriticalSection) -> ! {
 
             match t_ref.as_mut().unwrap().wait() {
                 Ok(()) => {
-                    let tmp: I8F8 = tcn.temperature().unwrap().into();
+                    let tmp_result = tcn.temperature();
+
+                    // Avoid bringing in formatting for panic due to optimization
+                    // issues.
+                    let tmp: I8F8 = match tmp_result {
+                        Ok(t) => { t.into() }
+                        Err(_) => { I8F8!(0) }
+                    };
 
                     let s: &mut dyn SerWrite<Error = serial::ErrorKind> = s_ref.as_mut().unwrap();
-                    write!(s, "{}\n", I8F8!(1.8) * tmp + I8F8!(32)).unwrap();
+
+                    match TEMP_DISPLAY.borrow(*cs).get() {
+                        TempDisplay::Celsius => write!(s, "{} C\n", tmp).unwrap(),
+                        TempDisplay::Fahrenheit => {
+                            // Don't bring in FixedI32 formatting.
+                            write!(s, "{} F\n", I9F7!(1.8) * I9F7::lossy_from(tmp) + I9F7!(32)).unwrap()
+                        },
+                    }
                 }
                 _ => {}
             }
         })
     }
+}
+
+#[interrupt]
+fn PORT1(cs: CriticalSection) {
+    let p = PORT1_PINS.borrow(cs).get().unwrap();
+    let mut temp_display = TEMP_DISPLAY.borrow(cs).get();
+
+    temp_display = match temp_display {
+        TempDisplay::Celsius => TempDisplay::Fahrenheit,
+        TempDisplay::Fahrenheit => TempDisplay::Celsius,
+    };
+
+    TEMP_DISPLAY.borrow(cs).set(temp_display);
+
+    p.p1ifg.modify(|_, w| {
+        w.p3().clear_bit()
+    });
 }
 
 #[interrupt]
