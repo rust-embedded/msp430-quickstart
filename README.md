@@ -6,7 +6,7 @@ This project is developed and maintained by the [MSP430 team][team].
 
 ## Dependencies
 
-- Rust nightly-2019-03-27 or a newer toolchain. _Only nightly compilers work
+- Rust nightly-2022-01-24 or a newer toolchain. _Only nightly compilers work
   for now._
 
   You can set up a nightly compiler as the default compiler using
@@ -18,11 +18,11 @@ This project is developed and maintained by the [MSP430 team][team].
 - TI's [MSP430 GCC Compiler](http://www.ti.com/tool/MSP430-GCC-OPENSOURCE),
   version 8.3.0 or greater. `msp430-elf-gcc` should be visible on the path.
 
-- [`svd2rust`](https://github.com/rust-embedded/svd2rust), commit 783fbd0 or
-  newer.
+- [`svd2rust`](https://github.com/rust-embedded/svd2rust), version 0.20.0 or
+  a newer commit.
 
-- [`msp430_svd`](https://github.com/pftbest/msp430_svd), commit e1eb730 or
-  newer. Cloning the repo and following the directions in README.md is
+- [`msp430_svd`](https://github.com/pftbest/msp430_svd), version 0.3.0 or a
+  newer commit. Cloning the repo and following the directions in README.md is
   sufficient.
 
 ## Using this template
@@ -72,7 +72,7 @@ This project is developed and maintained by the [MSP430 team][team].
    [`msp430_svd`](https://github.com/pftbest/msp430_svd/tree/master/msp430-gcc-support-files)
    repository.
 
-2. Instantiate the template.
+2. Instantiate the template and follow the prompts.
 
    ``` console
    $ cargo generate --git https://github.com/rust-embedded/msp430-quickstart
@@ -88,7 +88,7 @@ This project is developed and maintained by the [MSP430 team][team].
 
    ``` toml
    # [dependencies.msp430g2553]
-   # version = "0.2.0"
+   # version = "0.3.0"
    # features = ["rt"]
    [dependencies.msp430fr2355]
    version = "0.4.0"
@@ -114,9 +114,8 @@ This project is developed and maintained by the [MSP430 team][team].
    }
    ```
 
-5. Build the template application or one of the examples. If building
-   `timer-oncecell`, don't forget to uncomment the `once_cell` dependency in
-   `Cargo.toml`! Some examples (such as `timer`) may not compile due to size
+5. Build the template application or one of the examples. Some examples
+   (such as `timer` or `temp-hal`) may not compile due to size
    constraints when building using the `dev` profile (the default).
 
    ``` console
