@@ -12,6 +12,8 @@
 mod hal;
 use hal::*;
 
+mod newtypes;
+
 extern crate panic_msp430;
 
 use core::cell::{Cell, RefCell};
@@ -125,10 +127,14 @@ fn main(cs: CriticalSection) -> ! {
                     let s: &mut dyn SerWrite<Error = serial::ErrorKind> = s_ref.as_mut().unwrap();
 
                     match TEMP_DISPLAY.borrow(*cs).get() {
-                        TempDisplay::Celsius => write!(s, "{} C\n", tmp).unwrap(),
+                        TempDisplay::Celsius => {
+                            let tmp_c: newtypes::fmt::I8F8SmallFmt = tmp.into();
+                            write!(s, "{} C\n", tmp_c).unwrap()
+                        }
                         TempDisplay::Fahrenheit => {
                             // Don't bring in FixedI32 formatting.
-                            write!(s, "{} F\n", I9F7!(1.8) * I9F7::lossy_from(tmp) + I9F7!(32)).unwrap()
+                            let tmp_f: newtypes::fmt::I9F7SmallFmt = (I9F7!(1.8) * I9F7::lossy_from(tmp) + I9F7!(32)).into();
+                            write!(s, "{} F\n", tmp_f).unwrap()
                         },
                     }
                 }
