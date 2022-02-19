@@ -116,12 +116,23 @@ This project is developed and maintained by the [MSP430 team][team].
 
 5. Build the template application or one of the examples. Some examples
    (such as `timer` or `temp-hal`) may not compile due to size
-   constraints when building using the `dev` profile (the default).
+   constraints when building using the `dev` profile (the default). Pass the
+   `--release` option to `cargo build` in these cases.
 
    ``` console
-   $ cargo build -Zbuild-std=core
-   $ cargo build -Zbuild-std=core --examples
+   $ cargo build
+   $ cargo build --examples
    ```
+
+   Note that due to [`.cargo/config`](.cargo/config), the above is shorthand
+   for:
+
+   ``` console
+   $ cargo build --target=msp430-none-elf -Zbuild-std=core
+   $ cargo build --target=msp430-none-elf -Zbuild-std=core --examples
+   ```
+
+   You may wish to experiment with other commented options in `.cargo/config`.
 
 6. Once you have an ELF binary built, flash it to your microcontroller. Use [`mspdebug`](https://github.com/dlbeer/mspdebug) to launch a debug session and `msp430-elf-gdb` with the linked gdb script. For the msp430g2553 and the MSP-EXP430G2 launchpad board this looks like the following:
 

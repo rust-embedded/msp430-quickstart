@@ -34,3 +34,8 @@ rustflags = [
 [build]
 # Only one target to support for all chips!
 target = "msp430-none-elf"
+
+[unstable]
+# MSP430 doesn't come with libcore compiled already. But when it does, this
+# key can be removed.
+build-std = ["core"]
