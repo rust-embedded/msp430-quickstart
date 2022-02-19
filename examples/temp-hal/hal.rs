@@ -2,7 +2,7 @@ use core::convert::Infallible;
 
 use embedded_hal::i2c::{
     self,
-    blocking::{Read as I2cRead, Write as I2cWrite}
+    blocking::{Read as I2cRead, Write as I2cWrite},
 };
 use embedded_hal::serial::{self, nb::Write as SerWrite};
 use embedded_hal::timer::{nb::CountDown, Periodic};

@@ -35,8 +35,10 @@ use tcn75a::{ConfigReg, Resolution, Tcn75a};
 // interrupts, thus is not static.
 static TIMER: mspint::Mutex<RefCell<Option<Timer>>> = mspint::Mutex::new(RefCell::new(None));
 static SERIAL: mspint::Mutex<RefCell<Option<Serial>>> = mspint::Mutex::new(RefCell::new(None));
-static PORT1_PINS: mspint::Mutex<OnceCell<{{device}}::PORT_1_2>> = mspint::Mutex::new(OnceCell::new());
-static TEMP_DISPLAY: mspint::Mutex<Cell<TempDisplay>> = mspint::Mutex::new(Cell::new(TempDisplay::Celsius));
+static PORT1_PINS: mspint::Mutex<OnceCell<{{device}}::PORT_1_2>> =
+    mspint::Mutex::new(OnceCell::new());
+static TEMP_DISPLAY: mspint::Mutex<Cell<TempDisplay>> =
+    mspint::Mutex::new(Cell::new(TempDisplay::Celsius));
 
 #[derive(Debug, Clone, Copy)]
 enum TempDisplay {
@@ -54,8 +56,12 @@ fn init(cs: mspint::CriticalSection) -> Tcn75a<I2c> {
     clock.bcsctl1.modify(|_, w| w.diva().diva_1()); // Divide AUX clock by two (6000 Hz).
 
     let port_1_2 = &p.PORT_1_2;
-    port_1_2.p1dir.modify(|_, w| w.p0().set_bit().p3().clear_bit());
-    port_1_2.p1out.modify(|_, w| w.p0().set_bit().p3().set_bit()); // Pullup on P3.
+    port_1_2
+        .p1dir
+        .modify(|_, w| w.p0().set_bit().p3().clear_bit());
+    port_1_2
+        .p1out
+        .modify(|_, w| w.p0().set_bit().p3().set_bit()); // Pullup on P3.
     port_1_2.p1ren.modify(|_, w| w.p3().set_bit());
 
     // Set bits for UART and I2C operation.
@@ -81,9 +87,7 @@ fn init(cs: mspint::CriticalSection) -> Tcn75a<I2c> {
     });
 
     // Set bit to interrupt on button on P1.3
-    port_1_2.p1ie.modify(|_, w| {
-        w.p3().set_bit()
-    });
+    port_1_2.p1ie.modify(|_, w| w.p3().set_bit());
 
     let mut timer = Timer::new(p.TIMER0_A3);
     timer.start(6000u16).unwrap();
@@ -119,8 +123,10 @@ fn main(mut tcn: Tcn75a<I2c>) -> ! {
                     // Avoid bringing in formatting for panic due to optimization
                     // issues.
                     let tmp: I8F8 = match tmp_result {
-                        Ok(t) => { t.into() }
-                        Err(_) => { I8F8!(0) }
+                        Ok(t) => t.into(),
+                        Err(_) => {
+                            I8F8!(0)
+                        }
                     };
 
                     let s: &mut dyn SerWrite<Error = serial::ErrorKind> = s_ref.as_mut().unwrap();
@@ -132,9 +138,10 @@ fn main(mut tcn: Tcn75a<I2c>) -> ! {
                         }
                         TempDisplay::Fahrenheit => {
                             // Don't bring in FixedI32 formatting.
-                            let tmp_f: newtypes::fmt::I9F7SmallFmt = (I9F7!(1.8) * I9F7::lossy_from(tmp) + I9F7!(32)).into();
+                            let tmp_f: newtypes::fmt::I9F7SmallFmt =
+                                (I9F7!(1.8) * I9F7::lossy_from(tmp) + I9F7!(32)).into();
                             write!(s, "{} F\n", tmp_f).unwrap()
-                        },
+                        }
                     }
                 }
                 _ => {}
@@ -155,9 +162,7 @@ fn PORT1(cs: CriticalSection) {
 
     TEMP_DISPLAY.borrow(cs).set(temp_display);
 
-    p.p1ifg.modify(|_, w| {
-        w.p3().clear_bit()
-    });
+    p.p1ifg.modify(|_, w| w.p3().clear_bit());
 }
 
 #[interrupt]
