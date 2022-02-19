@@ -24,8 +24,7 @@ use msp430::interrupt as mspint;
 use msp430_rt::entry;
 use {{device}}::{interrupt, Peripherals};
 
-#[entry]
-fn main(_cs: CriticalSection) -> ! {
+fn init(_cs: mspint::CriticalSection) {
     // Safe because interrupts are disabled after a reset.
     let p = unsafe { Peripherals::steal() };
 
@@ -50,12 +49,10 @@ fn main(_cs: CriticalSection) -> ! {
     timer.tactl.modify(|_, w| w.tassel().tassel_1().mc().mc_1());
     timer.tacctl1.modify(|_, w| w.ccie().set_bit());
     timer.taccr1.write(|w| w.bits(600));
+}
 
-    // Safe because interrupts are disabled after a reset.
-    unsafe {
-        mspint::enable();
-    }
-
+#[entry(interrupt_enable(pre_interrupt = init))]
+fn main() -> ! {
     loop {
         mspint::free(|_cs| {
             // Do something while interrupts are disabled.

@@ -44,8 +44,7 @@ enum TempDisplay {
     Fahrenheit,
 }
 
-#[entry]
-fn main(cs: CriticalSection) -> ! {
+fn init(cs: mspint::CriticalSection) -> Tcn75a<I2c> {
     let p = Peripherals::take().unwrap();
 
     WatchdogTimer::new(p.WATCHDOG_TIMER).disable().unwrap();
@@ -103,11 +102,11 @@ fn main(cs: CriticalSection) -> ! {
     *SERIAL.borrow(cs).borrow_mut() = Some(serial);
     PORT1_PINS.borrow(cs).set(p.PORT_1_2).ok().unwrap();
 
-    // Safe because interrupts are disabled after a reset.
-    unsafe {
-        mspint::enable();
-    }
+    tcn
+}
 
+#[entry(interrupt_enable(pre_interrupt = init))]
+fn main(mut tcn: Tcn75a<I2c>) -> ! {
     loop {
         mspint::free(|cs| {
             let mut t_ref = TIMER.borrow(*cs).borrow_mut();

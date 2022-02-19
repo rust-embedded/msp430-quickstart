@@ -22,8 +22,7 @@ use {{device}}::{interrupt, Peripherals};
 static PERIPHERALS: mspint::Mutex<RefCell<Option<Peripherals>>> =
     mspint::Mutex::new(RefCell::new(None));
 
-#[entry]
-fn main(cs: CriticalSection) -> ! {
+fn init(cs: mspint::CriticalSection) {
     let p = Peripherals::take().unwrap();
 
     let wdt = &p.WATCHDOG_TIMER;
@@ -49,12 +48,10 @@ fn main(cs: CriticalSection) -> ! {
     timer.taccr1.write(|w| w.bits(600));
 
     *PERIPHERALS.borrow(cs).borrow_mut() = Some(p);
+}
 
-    // Safe because interrupts are disabled after a reset.
-    unsafe {
-        mspint::enable();
-    }
-
+#[entry(interrupt_enable(pre_interrupt = init))]
+fn main() -> ! {
     loop {
         mspint::free(|_cs| {
             // Do something while interrupts are disabled.
