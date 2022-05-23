@@ -9,9 +9,25 @@ This project is developed and maintained by the [MSP430 team][team].
 - Rust nightly-2022-01-24 or a newer toolchain. _Only nightly compilers work
   for now._
 
-  You can set up a nightly compiler as the default compiler using
-  `rustup default nightly`. Alternatively, you can set up overrides on a
-  project basis using `rustup override set --path /path/to/crate nightly-YYYY-MM-DD`
+  The [`rust-toolchain.toml`](./rust-toolchain.toml) file makes sure this step
+  is done for you. This file tells [`rustup`](https://rustup.rs/) to download
+  and use nightly compiler for this crate, as well as download the compiler
+  source to build `libcore`.
+
+  You can manually set up a nightly compiler as the default for all MSP430
+  projects by running:
+
+  ``` console
+  $ rustup default nightly
+  $ rustup component add rust-src
+  ```
+
+  Alternatively, you can manually set up overrides on a project basis using:
+
+  ```console
+  $ rustup override set --path /path/to/crate nightly-YYYY-MM-DD`.
+  $ rustup component add --toolchain nightly-YYYY-MM-DD rust-src
+  ```
 
 - The `cargo generate` subcommand ([Installation instructions](https://github.com/ashleygwilliams/cargo-generate#installation)).
 
@@ -126,12 +142,12 @@ The following dependencies are required in order to generate a peripheral access
    $ cargo build --examples
    ```
 
-   Note that due to [`.cargo/config`](.cargo/config), the above is shorthand
-   for:
+   Note that due to [`.cargo/config`](.cargo/config) and [`rust-toolchain.toml`](./rust-toolchain.toml),
+   the above is shorthand for:
 
    ``` console
-   $ cargo build --target=msp430-none-elf -Zbuild-std=core
-   $ cargo build --target=msp430-none-elf -Zbuild-std=core --examples
+   $ cargo +nightly build --target=msp430-none-elf -Zbuild-std=core
+   $ cargo +nightly build --target=msp430-none-elf -Zbuild-std=core --examples
    ```
 
    You may wish to experiment with other commented options in `.cargo/config`.
