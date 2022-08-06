@@ -18,6 +18,8 @@ This project is developed and maintained by the [MSP430 team][team].
 - TI's [MSP430 GCC Compiler](http://www.ti.com/tool/MSP430-GCC-OPENSOURCE),
   version 8.3.0 or greater. `msp430-elf-gcc` should be visible on the path.
 
+The following dependencies are required in order to generate a peripheral access crate (see *Using this template* below)
+
 - [`svd2rust`](https://github.com/rust-embedded/svd2rust), version 0.20.0 or
   a newer commit.
 
