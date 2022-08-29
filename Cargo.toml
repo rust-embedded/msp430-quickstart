@@ -19,7 +19,7 @@ features = ["rt"]
 
 {% if examples == "yes" %}
 [dev-dependencies]
-embedded-hal = "=1.0.0-alpha.6"
+embedded-hal = "=1.0.0-alpha.8"
 nb = "1.0.0"
 fixed = "1.6.0"
 fixed-macro = "1.1.1"
@@ -29,7 +29,7 @@ version = "1.7.2"
 default_features = false
 
 [dev-dependencies.tcn75a]
-version = "0.2.0"
+version = "0.2.0-alpha.1"
 git = "https://github.com/cr1901/i2c-server"
 branch = "embedded-hal-1.0"
 

@@ -20,8 +20,6 @@ use core::cell::{Cell, RefCell};
 use core::fmt::Write;
 
 use embedded_hal::serial::{self, nb::Write as SerWrite};
-use embedded_hal::timer::nb::CountDown;
-use embedded_hal::watchdog::blocking::Disable;
 use fixed::traits::LossyFrom;
 use fixed::types::{I8F8, I9F7};
 use fixed_macro::types::{I8F8, I9F7};

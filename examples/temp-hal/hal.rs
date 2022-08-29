@@ -1,12 +1,7 @@
 use core::convert::Infallible;
 
-use embedded_hal::i2c::{
-    self,
-    blocking::{Read as I2cRead, Write as I2cWrite},
-};
+use embedded_hal::i2c::{self, blocking::I2c as I2cTrait, blocking::Operation};
 use embedded_hal::serial::{self, nb::Write as SerWrite};
-use embedded_hal::timer::{nb::CountDown, Periodic};
-use embedded_hal::watchdog::blocking::{Disable, Enable, Watchdog};
 use nb::Error as NbError;
 use nb::Result as NbResult;
 
@@ -16,6 +11,7 @@ pub struct Timer {
 }
 
 // Interrupt-driven non-blocking timer.
+// Inherent impl inspired by previous embedded-hal traits.
 impl Timer {
     pub fn new(inner: {{device}}::TIMER0_A3) -> Self {
         // 6kHz timer using AUX clk.
@@ -32,21 +28,13 @@ impl Timer {
         self.elapsed = true;
         self.inner.tacctl1.modify(|_, w| w.ccifg().clear_bit());
     }
-}
 
-impl CountDown for Timer {
-    type Error = Infallible;
-    type Time = u16;
-
-    fn start<T>(&mut self, count: T) -> Result<(), Self::Error>
-    where
-        T: Into<Self::Time>,
-    {
-        self.inner.taccr0.write(|w| w.bits(count.into()));
+    pub fn start(&mut self, count: u16) -> Result<(), Infallible> {
+        self.inner.taccr0.write(|w| w.bits(count));
         Ok(())
     }
 
-    fn wait(&mut self) -> NbResult<(), Self::Error> {
+    pub fn wait(&mut self) -> NbResult<(), Infallible> {
         if self.elapsed {
             self.elapsed = false;
             return Ok(());
@@ -55,8 +43,6 @@ impl CountDown for Timer {
         return Err(NbError::WouldBlock);
     }
 }
-
-impl Periodic for Timer {}
 
 pub struct Serial {
     inner: {{device}}::USCI_A0_UART_MODE,
@@ -78,8 +64,6 @@ impl Serial {
 }
 
 impl SerWrite<u8> for Serial {
-    type Error = serial::ErrorKind;
-
     fn write(&mut self, word: u8) -> NbResult<(), Self::Error> {
         if self.inner.uca0stat.read().ucbusy().bit_is_set() {
             Err(NbError::WouldBlock)
@@ -92,6 +76,10 @@ impl SerWrite<u8> for Serial {
     fn flush(&mut self) -> NbResult<(), Self::Error> {
         Ok(())
     }
+}
+
+impl serial::ErrorType for Serial {
+    type Error = serial::ErrorKind;
 }
 
 pub struct I2c {
@@ -116,10 +104,10 @@ impl I2c {
     }
 }
 
-impl I2cRead for I2c {
+// Many functions aren't implemented because the tcn75a driver only uses
+// read and write functions at present.
+impl I2cTrait for I2c {
     // FIXME: Handle various error cases.
-    type Error = i2c::ErrorKind;
-
     fn read(&mut self, address: u8, buffer: &mut [u8]) -> Result<(), Self::Error> {
         self.inner
             .ucb0i2csa
@@ -129,11 +117,11 @@ impl I2cRead for I2c {
 
         // Wait until peripheral responds.
         // FIXME: Check for UCNACKIFG bit, error xfer (and send stop?) if so.
-        while self.inner.ucb0ctl1.read().uctxstt().bit_is_set() { }
+        while self.inner.ucb0ctl1.read().uctxstt().bit_is_set() {}
 
         if let Some((last, all_but_last)) = buffer.split_last_mut() {
             for b in all_but_last {
-                while self.ifg.ucb0rxifg.bit_is_clear() { }
+                while self.ifg.ucb0rxifg.bit_is_clear() {}
                 *b = self.inner.ucb0rxbuf.read().ucb0rxbuf().bits();
             }
 
@@ -141,29 +129,24 @@ impl I2cRead for I2c {
             // If single byte to be received, we have to set stop bit WHILE the byte is being
             // received. This handles both.
             self.inner.ucb0ctl1.modify(|_, w| w.uctxstp().set_bit());
-            while self.ifg.ucb0rxifg.bit_is_clear() { }
+            while self.ifg.ucb0rxifg.bit_is_clear() {}
             *last = self.inner.ucb0rxbuf.read().ucb0rxbuf().bits();
         }
 
         Ok(())
     }
-}
-
-impl I2cWrite for I2c {
-    // FIXME: Handle various error cases.
-    type Error = i2c::ErrorKind;
 
     fn write(&mut self, addr: u8, bytes: &[u8]) -> Result<(), Self::Error> {
         self.inner.ucb0i2csa.write(|w| w.ucsa().bits(addr.into()));
         self.inner.ucb0ctl1.modify(|_, w| w.uctr().set_bit()); // Transmitter mode.
         self.inner.ucb0ctl1.modify(|_, w| w.uctxstt().set_bit()); // Generate start condition.
 
-        while self.ifg.ucb0txifg.bit_is_clear() { } // Wait until ready. Required?
+        while self.ifg.ucb0txifg.bit_is_clear() {} // Wait until ready. Required?
 
         // FIXME: Check for UCNACKIFG/UCALIFG bit, error xfer (and send stop?) if so.
         for b in bytes {
             self.inner.ucb0txbuf.write(|w| w.bits(*b));
-            while self.ifg.ucb0txifg.bit_is_clear() { }
+            while self.ifg.ucb0txifg.bit_is_clear() {}
         }
 
         // Regardless of single byte or multi-byte xfer, setting STP bit immediately after
@@ -172,8 +155,64 @@ impl I2cWrite for I2c {
 
         Ok(())
     }
+
+    fn write_iter<B>(
+        &mut self,
+        _addr: u8,
+        _bytes: B,
+    ) -> Result<(), <Self as embedded_hal::i2c::ErrorType>::Error>
+    where
+        B: IntoIterator<Item = u8>,
+    {
+        todo!()
+    }
+
+    fn write_read(
+        &mut self,
+        _addr: u8,
+        _bytes: &[u8],
+        _buffer: &mut [u8],
+    ) -> Result<(), <Self as embedded_hal::i2c::ErrorType>::Error> {
+        todo!()
+    }
+
+    fn write_iter_read<B>(
+        &mut self,
+        _addr: u8,
+        _bytes: B,
+        _buffer: &mut [u8],
+    ) -> Result<(), <Self as embedded_hal::i2c::ErrorType>::Error>
+    where
+        B: IntoIterator<Item = u8>,
+    {
+        todo!()
+    }
+
+    fn transaction<'a>(
+        &mut self,
+        _addr: u8,
+        _operations: &mut [Operation<'a>],
+    ) -> Result<(), <Self as embedded_hal::i2c::ErrorType>::Error> {
+        todo!()
+    }
+
+    fn transaction_iter<'a, O>(
+        &mut self,
+        _addr: u8,
+        _operations: O,
+    ) -> Result<(), <Self as embedded_hal::i2c::ErrorType>::Error>
+    where
+        O: IntoIterator<Item = Operation<'a>>,
+    {
+        todo!()
+    }
 }
 
+impl i2c::ErrorType for I2c {
+    type Error = i2c::ErrorKind;
+}
+
+// Inherent impl inspired by previous embedded-hal traits.
 pub struct WatchdogTimer {
     inner: {{device}}::WATCHDOG_TIMER,
 }
@@ -182,46 +221,30 @@ impl WatchdogTimer {
     pub fn new(inner: {{device}}::WATCHDOG_TIMER) -> Self {
         WatchdogTimer { inner }
     }
-}
 
-impl Enable for WatchdogTimer {
-    type Error = Infallible;
-    type Time = WatchdogDivider;
-    type Target = WatchdogTimer;
-
-    fn start<T>(self, period: T) -> Result<Self::Target, Self::Error>
-    where
-        T: Into<Self::Time>,
-    {
+    #[allow(unused)]
+    pub fn start(self, period: u8) -> Result<Self, Infallible> {
         self.inner.wdtctl.write(|w| {
             w.wdtpw()
                 .password()
                 .wdthold()
                 .clear_bit()
                 .wdtis()
-                .bits(period.into() as u8)
+                .bits(period)
         });
 
         Ok(self)
     }
-}
 
-impl Disable for WatchdogTimer {
-    type Error = Infallible;
-    type Target = WatchdogTimer;
-
-    fn disable(self) -> Result<Self::Target, Self::Error> {
+    pub fn disable(self) -> Result<Self, Infallible> {
         self.inner
             .wdtctl
             .write(|w| w.wdtpw().password().wdthold().set_bit());
         Ok(self)
     }
-}
 
-impl Watchdog for WatchdogTimer {
-    type Error = Infallible;
-
-    fn feed(&mut self) -> Result<(), Self::Error> {
+    #[allow(unused)]
+    pub fn feed(&mut self) -> Result<(), Infallible> {
         self.inner
             .wdtctl
             .write(|w| w.wdtpw().password().wdtcntcl().set_bit());
