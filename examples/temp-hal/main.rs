@@ -23,7 +23,7 @@ use embedded_hal::serial::{self, nb::Write as SerWrite};
 use fixed::traits::LossyFrom;
 use fixed::types::{I8F8, I9F7};
 use fixed_macro::types::{I8F8, I9F7};
-use msp430::interrupt as mspint;
+use msp430::{interrupt as mspint, critical_section as mspcs};
 use msp430_rt::entry;
 use {{device}}::{interrupt, Peripherals};
 use once_cell::unsync::OnceCell;
@@ -110,9 +110,9 @@ fn init(cs: mspint::CriticalSection) -> Tcn75a<I2c> {
 #[entry(interrupt_enable(pre_interrupt = init))]
 fn main(mut tcn: Tcn75a<I2c>) -> ! {
     loop {
-        mspint::free(|cs| {
-            let mut t_ref = TIMER.borrow(*cs).borrow_mut();
-            let mut s_ref = SERIAL.borrow(*cs).borrow_mut();
+        mspcs::with(|cs| {
+            let mut t_ref = TIMER.borrow(cs).borrow_mut();
+            let mut s_ref = SERIAL.borrow(cs).borrow_mut();
 
             match t_ref.as_mut().unwrap().wait() {
                 Ok(()) => {
@@ -129,7 +129,7 @@ fn main(mut tcn: Tcn75a<I2c>) -> ! {
 
                     let s: &mut dyn SerWrite<Error = serial::ErrorKind> = s_ref.as_mut().unwrap();
 
-                    match TEMP_DISPLAY.borrow(*cs).get() {
+                    match TEMP_DISPLAY.borrow(cs).get() {
                         TempDisplay::Celsius => {
                             let tmp_c: newtypes::fmt::I8F8SmallFmt = tmp.into();
                             write!(s, "{} C\n", tmp_c).unwrap()

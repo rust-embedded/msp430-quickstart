@@ -6,16 +6,16 @@ name = "{{project-name}}"
 version = "0.1.0"
 
 [dependencies]
-msp430 = "0.3.0"
-msp430-rt = "0.3.1"
-panic-msp430 = "0.3.0"
+msp430 = { version = "0.4.0", features = ["critical-section-single-core"] }
+msp430-rt = "0.4.0"
+panic-msp430 = "0.4.0"
 
 # Use an existing PAC to ensure examples and the crate itself compiles. If
 # targeting a different device, you may need to change the version of your
 # crate. Your PAC must be generated with svd2rust version v0.20.0 or later.
 [dependencies.{{device}}]
-version = "0.3.0"
-features = ["rt"]
+version = "0.4.0"
+features = ["rt", "critical-section"]
 
 {% if examples == "yes" %}
 [dev-dependencies]

@@ -20,7 +20,7 @@
 
 extern crate panic_msp430;
 
-use msp430::interrupt as mspint;
+use msp430::{interrupt as mspint, critical_section as mspcs};
 use msp430_rt::entry;
 use {{device}}::{interrupt, Peripherals};
 
@@ -54,7 +54,7 @@ fn init(_cs: mspint::CriticalSection) {
 #[entry(interrupt_enable(pre_interrupt = init))]
 fn main() -> ! {
     loop {
-        mspint::free(|_cs| {
+        mspcs::with(|_cs| {
             // Do something while interrupts are disabled.
         })
     }
